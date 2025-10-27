@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>IdP Demo — Registro exitoso</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    :root {
+      --bg:#f7fafc;
+      --fg:#1f2937;
+      --muted:#6b7280;
+      --card:#ffffff;
+      --border:#e5e7eb;
+      --acc:#06b6d4;
+      --acc-2:#0ea5e9;
+      --shadow: 0 8px 30px rgba(2,32,71,0.06);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial;
+      background: linear-gradient(180deg, #f8fbff 0%, #f7fafc 100%);
+      color: var(--fg);
+    }
+    .wrap { max-width: 680px; margin: 40px auto; padding: 0 16px; text-align: center; }
+    h1 { font-weight: 800; letter-spacing: -0.02em; margin-bottom: 12px; }
+    p { color: var(--muted); margin: 0 0 24px; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .btn {
+      display:inline-block;
+      background: var(--acc);
+      border:1px solid transparent;
+      color:#042028;
+      font-weight: 700;
+      cursor:pointer;
+      text-align:center;
+      text-decoration:none;
+      padding:12px 18px;
+      border-radius:12px;
+      transition: transform .05s ease, background .15s ease;
+    }
+    .btn:hover { background: var(--acc-2); }
+    .btn:active { transform: translateY(1px); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>✅ Registro exitoso</h1>
+      <p>Tu credencial se ha registrado correctamente.<br>
+         Ahora puedes iniciar sesión en tu <strong>wallet</strong>.</p>
+
+      <a class="btn" href="https://localhost:5001/login">Ir a la Wallet</a>
+    </div>
+  </div>
+</body>
+</html>

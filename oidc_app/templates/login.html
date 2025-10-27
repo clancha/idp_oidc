@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>IdP Demo — Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Nuevo estilo: tema claro + acentos turquesa -->
+  <style>
+    :root {
+      --bg:#f7fafc;        /* fondo claro */
+      --fg:#1f2937;        /* texto gris oscuro */
+      --muted:#6b7280;     /* texto secundario */
+      --card:#ffffff;      /* tarjetas blancas */
+      --border:#e5e7eb;    /* bordes ligeros */
+      --acc:#06b6d4;       /* turquesa (primary) */
+      --acc-2:#0ea5e9;     /* azul claro (hover) */
+      --shadow: 0 8px 30px rgba(2,32,71,0.06);
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial;
+      background: linear-gradient(180deg, #f8fbff 0%, #f7fafc 100%);
+      color: var(--fg);
+    }
+    .wrap { max-width: 980px; margin: 28px auto; padding: 0 16px; }
+    h1 { margin: 0 0 10px; font-weight: 800; letter-spacing: -0.02em; }
+    p.hint { color: var(--muted); margin: 0 0 18px; }
+
+    .grid { display:grid; grid-template-columns: 1fr 1fr; gap:18px; }
+    @media (max-width: 860px){ .grid { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding:16px;
+      box-shadow: var(--shadow);
+    }
+
+    label { display:block; margin:12px 0 6px; color: var(--muted); font-weight: 600; }
+    input, textarea, button, select {
+      width: 100%;
+      padding:11px 12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:#ffffff;
+      color: var(--fg);
+      outline: none;
+      transition: box-shadow .15s ease, border-color .15s ease, background .15s ease;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--acc);
+      box-shadow: 0 0 0 4px rgba(6,182,212,0.15);
+      background:#ffffff;
+    }
+    textarea { min-height: 140px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+    .row { display:flex; gap:10px; align-items:center; flex-wrap: wrap; }
+    .btn {
+      display:inline-block;
+      background: var(--acc);
+      border:1px solid transparent;
+      color:#042028;
+      font-weight: 700;
+      cursor:pointer;
+      text-align:center;
+      text-decoration:none;
+      padding:11px 14px;
+      border-radius:12px;
+      transition: transform .05s ease, background .15s ease;
+    }
+    .btn:hover { background: var(--acc-2); }
+    .btn:active { transform: translateY(1px); }
+    .btn.secondary {
+      background:#eef6fb;
+      color:#0f172a;
+      border-color:#dbe7f3;
+    }
+    .btn.secondary:hover { background:#e6f1f9; }
+
+    .video-box {
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+      background:#000;
+      border:1px solid var(--border);
+    }
+    video, canvas { width:100%; display:block; }
+
+    .controls { display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
+    .preview {
+      margin-top:10px;
+      border:1px dashed #cfe8f3;
+      background:#f2f9fc;
+      border-radius:12px;
+      padding:8px;
+      display:none;
+    }
+    .preview img { max-width: 100%; border-radius: 10px; display:block; }
+
+    .error {
+      background:#fee2e2;
+      border:1px solid #fecaca;
+      color:#7f1d1d;
+      padding:10px 12px;
+      border-radius:10px;
+      margin:10px 0;
+      display:none;
+    }
+
+    /* Accesibilidad */
+    :focus-visible { outline: 3px solid rgba(6,182,212,0.55); outline-offset: 2px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Login (PoC) — Autenticador Cloud</h1>
+    <p class="hint">
+      Este formulario recoge <em>nombre</em>, <em>contraseña</em>, <em>rostro</em> y <em>opciones WebAuthn</em>.<br>
+      Se enviará esto a tu servicio de autenticación <strong>(WebAuthn)</strong> en la nube.
+    </p>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul style="list-style:none;padding:0;margin:10px 0;">
+          {% for category, message in messages %}
+            <li style="padding:10px;border-radius:8px;margin:6px 0;
+                       background:#fee2e2;border:1px solid #fecaca;color:#7f1d1d;">
+              {{ message }}
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+
+    <form method="post" action="/login" id="formulario">
+      <input type="hidden" name="return_to" value="{{ return_to }}">
+
+      <div class="grid">
+        <!-- Datos -->
+        <div class="card">
+          <label for="firstname">Nombre</label>
+          <input id="firstname" name="firstname" placeholder="alice" required autocomplete="username given-name">
+
+          <label for="password">Contraseña</label>
+          <input id="password" name="password" type="password" placeholder="Tu contraseña" required autocomplete="current-password">
+
+          <label for="webauthn_options">Opciones WebAuthn (JSON)</label>
+          <textarea id="webauthn_options" name="webauthn_options" spellcheck="false" placeholder='{"challenge":"...","rpId":"localhost","allowCredentials":[],"userVerification":"preferred"}'>
+{
+  "challenge": "CHALLENGE_BASE64URL",
+  "rpId": "localhost",
+  "allowCredentials": [],
+  "userVerification": "preferred",
+  "timeout": 60000
+}
+          </textarea>
+
+          
+        </div>
+
+        <!-- Webcam -->
+        <div class="card">
+          <label>Rostro (webcam)</label>
+          <div class="video-box">
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas" style="display:none;"></canvas>
+          </div>
+          <div class="controls">
+            <button type="button" class="btn" id="btn-start">Encender cámara</button>
+            <button type="button" class="btn secondary" id="btn-capture" disabled>Capturar</button>
+            <button type="button" class="btn secondary" id="btn-retake" style="display:none;">Repetir</button>
+          </div>
+          <div class="preview" id="preview">
+            <img id="preview-img" alt="Captura">
+          </div>
+          <div class="error" id="cam-error"></div>
+
+          <!-- Imagen capturada (Base64) -->
+          <input type="hidden" id="face_b64" name="face_b64" disabled>
+          <input type="hidden" id="face_mime" name="face_mime" value="image/jpeg" disbaled>
+          <p class="hint">La imagen se envía como Base64 (data URL).</p>
+
+          <!-- Fallback -->
+          <div style="margin-top:10px;">
+            <label for="face_file">¿Sin cámara? Sube una imagen</label>
+            <input type="file" id="face_file" accept="image/*">
+          </div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:16px;">
+        <button class="btn" type="submit">Entrar</button>
+        <a class="btn secondary" href="/logout">Limpiar sesión</a>
+        <a class="btn secondary" href="/register">Registrar</a>
+      </div>
+      
+      <input type="hidden" id="face_raw_bgr8" name="face_raw_bgr8" disabled>
+      <input type="hidden" id="face_raw_meta" name="face_raw_meta" disabled>
+      <input type="hidden" id="enc_payload" name="enc_payload">
+
+
+    </form>
+  </div>
+
+  <script type="module"  src="/static/js/main.js"></script>
+
+
+</body>
+</html>
