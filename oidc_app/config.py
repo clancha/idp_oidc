@@ -20,3 +20,6 @@ class Config:
     RP_ID = os.getenv("RP_ID", "localhost")  # dominio base del IdP
     ORIGIN = os.getenv("ORIGIN", "https://localhost:8080")  # origin del IdP
     
+    # Endpoints in the WSCD server
+    API_ENROLLMENT = os.getenv("API_ENROLLMENT", "/api/mceliece/enrollment")
+    API_VERIFICATION = os.getenv("API_VERIFICATION", "/api/mceliece/verification")
