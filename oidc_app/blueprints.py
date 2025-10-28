@@ -35,7 +35,7 @@ def random_challenge(n: int = 64) -> bytes:
 # ---------- Heatlh ----------
 @bp.get("/health")
 def health():
-    return jsonify(status="ok", wscd_url=current_app.config["WEBAUTHN_BASE_URL"].rstrip("/"))
+    return jsonify(status="ok", wscd_url=current_app.config["WSCD_URL"].rstrip("/"))
 
 
 # ---------- Discovery / JWKS / UserInfo (igual) ----------

@@ -16,7 +16,7 @@ class Config:
     SESSION_COOKIE_SECURE = False
 
     # WebAuthn Cloud    
-    WEBAUTHN_BASE_URL = os.getenv("WSCD_URL", "") # Poner aqui la dirección del WSCD (esta vacía porque no hay dominio y usamos trycloudflare de momenot)
+    WSCD_URL = os.getenv("WSCD_URL", "") # Poner aqui la dirección del WSCD (esta vacía porque no hay dominio y usamos trycloudflare de momenot)
     RP_ID = os.getenv("RP_ID", "localhost")  # dominio base del IdP
     ORIGIN = os.getenv("ORIGIN", "https://localhost:8080")  # origin del IdP
     
