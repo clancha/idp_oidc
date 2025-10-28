@@ -1,3 +1,5 @@
+# TODO. Traducir todos los mensajes de error al ingles
+
 from urllib.parse import urlencode, urlparse
 import os, json, base64, hashlib, requests, base64, hashlib
 
@@ -104,10 +106,11 @@ def do_register():
     base = current_app.config["WEBAUTHN_BASE_URL"].rstrip("/")
     api_enroll = current_app.config["API_ENROLLMENT"].rstrip("/")
 
+    nonce = random_challenge(32)
     try:
         resp = requests.post(f"{base}{api_enroll}", json={
             "username": username, "rpId": rp_id,
-            "overwrite": overwrite, "enc_payload":payload
+            "overwrite": overwrite, "enc_payload":payload, "nonce":base64.b64encode(nonce).decode('utf-8')
         }, timeout=5, verify=False)
         data = resp.json()
         if resp.status_code not in (200, 201):

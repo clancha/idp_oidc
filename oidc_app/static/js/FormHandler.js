@@ -155,7 +155,7 @@ export class FormHandler {
 
     } catch (err) {
       console.error(err);
-      this.showFormError("Error al cifrar datos: " + (err?.message || String(err)));
+      this.showFormError("Error al cifrar datos: " + (err?.message || String(err))); // TODO. Traducir los mensajes 
     }
   }
 }
