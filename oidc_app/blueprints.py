@@ -102,8 +102,10 @@ def do_register():
         return redirect("/register")
 
     base = current_app.config["WEBAUTHN_BASE_URL"].rstrip("/")
+    api_enroll = current_app.config["API_ENROLLMENT"].rstrip("/")
+
     try:
-        resp = requests.post(f"{base}/api/mceliece/enrollment", json={
+        resp = requests.post(f"{base}{api_enroll}", json={
             "username": username, "rpId": rp_id,
             "overwrite": overwrite, "enc_payload":payload
         }, timeout=5, verify=False)
@@ -170,8 +172,10 @@ def do_login():
     payload = request.form.get("enc_payload")
 
     base = current_app.config["WEBAUTHN_BASE_URL"].rstrip("/")
+    api_verification = current_app.config["API_VERIFICATION"].rstrip("/")
+
     try:
-        aresp = requests.post(f"{base}/api/mceliece/verification", json={
+        aresp = requests.post(f"{base}{api_verification}", json={
             "username": firstname,
             "rpId":rp_id,
             "overwrite":"true", ## CURRENTLY IT DONT MAKE SENSE
