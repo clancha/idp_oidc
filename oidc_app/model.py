@@ -100,7 +100,6 @@ def exchange_code(code: str, redirect_uri: str, client_id: str,
         if challenge != item.code_challenge:
             raise ValueError("PKCE inválido")
 
-    # Usuario “demo” — en real lo sacarías de sesión/DB
     user = User(sub=item.sub, email=f"{item.sub}@example.com", name=item.sub.title())
     print(user)
     # access_token

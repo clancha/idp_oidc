@@ -103,7 +103,7 @@ def do_register():
         flash("Falta el nombre.", "info")
         return redirect("/register")
 
-    base = current_app.config["WEBAUTHN_BASE_URL"].rstrip("/")
+    base = current_app.config["WSCD_URL"].rstrip("/")
     api_enroll = current_app.config["API_ENROLLMENT"].rstrip("/")
 
     nonce = random_challenge(32)
@@ -174,7 +174,7 @@ def do_login():
 
     payload = request.form.get("enc_payload")
 
-    base = current_app.config["WEBAUTHN_BASE_URL"].rstrip("/")
+    base = current_app.config["WSCD_URL"].rstrip("/")
     api_verification = current_app.config["API_VERIFICATION"].rstrip("/")
 
     try:
