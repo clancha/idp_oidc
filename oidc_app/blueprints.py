@@ -3,7 +3,7 @@
 from urllib.parse import urlencode, urlparse
 import os, json, base64, hashlib, requests, base64, hashlib
 
-from flask import Blueprint, request, jsonify, current_app, redirect, render_template, session, abort, flash, make_response
+from flask import Blueprint, request, jsonify, current_app, redirect, render_template, session, abort, flash, make_response, Response
 
 from .model import (
     init_demo_data, get_client, issue_code, exchange_code,
@@ -250,14 +250,14 @@ def authorize():
     if not sub:
         return_to = request.full_path
         return redirect(f"/login?{urlencode({'return_to': return_to})}")
+    print(sub)
 
+    session.clear()
     user = User(sub=sub, email=f"{sub}@example.com", name=sub.title())
     code = issue_code(client_id, redirect_uri, user, scope, nonce,
                       code_challenge, code_challenge_method)
 
     sep = "&" if urlparse(redirect_uri).query else "?"
-    print("SALIENDO....")
-    print(f"{redirect_uri}{sep}{urlencode({'code': code.code, 'state': state})}")
     return redirect(f"{redirect_uri}{sep}{urlencode({'code': code.code, 'state': state})}")
 
 @bp.post("/token")
@@ -277,6 +277,3 @@ def token():
         return jsonify(token_set)
     except Exception as e:
         return jsonify({"error": "invalid_grant", "error_description": str(e)}), 400
-
-
-
