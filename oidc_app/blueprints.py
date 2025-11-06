@@ -3,7 +3,7 @@
 from urllib.parse import urlencode, urlparse
 import os, json, base64, hashlib, requests, base64, hashlib
 
-from flask import Blueprint, request, jsonify, current_app, redirect, render_template, session, abort, flash, make_response, Response
+from flask import Blueprint, request, jsonify, current_app, redirect, render_template, session, abort, flash, make_response
 
 from .model import (
     init_demo_data, get_client, issue_code, exchange_code,
