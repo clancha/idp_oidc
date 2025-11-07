@@ -46,9 +46,9 @@ export function canvasToBGR8Base64(canvas){
   const { data } = ctx.getImageData(0, 0, 160, 160); // RGBA
   const out = new Uint8Array(160 * 160 * 3);         // BGR
   for (let i = 0, j = 0; i < data.length; i += 4) {
-    out[j++] = (data[i + 2] / 127.5) -1; // B
-    out[j++] = (data[i + 1] / 127.5) -1; // G
-    out[j++] = (data[i + 0] / 127.5) -1; // R
+    out[j++] = data[i + 2] // B
+    out[j++] = data[i + 1] // G
+    out[j++] = data[i + 0] // R
   }
   return arrayBufferToBase64(out.buffer);
 }
