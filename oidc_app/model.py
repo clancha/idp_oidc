@@ -66,6 +66,10 @@ def init_demo_data():
         client_id=cfg["CLIENT_ID"],
         redirect_uris=[cfg["REDIRECT_URI"]],
     )
+    CLIENTS["rp"] = Client(
+        client_id="rp",
+        redirect_uris=["https://wallet.licorice-us.eu/callback"]
+    )
 
 def get_client(client_id: str) -> Optional[Client]:
     return CLIENTS.get(client_id)

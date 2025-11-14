@@ -3,8 +3,8 @@ import base64
 
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-unsafe")
-    OIDC_ISSUER = os.getenv("OIDC_ISSUER", "https://localhost:8080")
-    OIDC_ISSUER_BACKEND = os.getenv("OIDC_ISSUER_BACKEND", "https://localhost:8080") # Docker internal address
+    OIDC_ISSUER = os.getenv("OIDC_ISSUER", "https://idp.licorice-us.eu")
+    OIDC_ISSUER_BACKEND = os.getenv("OIDC_ISSUER_BACKEND", "https://idp.licorice-us.eu") # Docker internal address
 
     # Cliente de prueba (público)
     CLIENT_ID = os.getenv("CLIENT_ID", "android-test-client")
@@ -18,7 +18,7 @@ class Config:
     # WebAuthn Cloud    
     WSCD_URL = os.getenv("WSCD_URL", "https://wscd.carloslancha.es") # Poner aqui la dirección del WSCD (esta vacía porque no hay dominio y usamos trycloudflare de momenot)
     RP_ID = os.getenv("RP_ID", "localhost")  # dominio base del IdP
-    ORIGIN = os.getenv("ORIGIN", "https://localhost:8080")  # origin del IdP
+    ORIGIN = os.getenv("ORIGIN", "https://idp.licorice-us.eu")  # origin del IdP
     
     # Endpoints in the WSCD server
     API_ENROLLMENT = os.getenv("API_ENROLLMENT", "/api/mceliece/enrollment")

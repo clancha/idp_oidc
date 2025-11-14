@@ -211,6 +211,7 @@ def do_login():
 
         # Verificar la firma
         public_key.verify(signature_bytes, challenge)
+        print("La firma es válida")
 
 
     except InvalidSignature:
