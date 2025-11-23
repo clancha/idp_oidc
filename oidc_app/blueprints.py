@@ -1,5 +1,3 @@
-# TODO. Traducir todos los mensajes de error al ingles
-
 from urllib.parse import urlencode, urlparse
 import os, json, base64, hashlib, requests, base64, hashlib
 
@@ -38,7 +36,7 @@ def health():
     return jsonify(status="ok", wscd_url=current_app.config["WSCD_URL"].rstrip("/"))
 
 
-# ---------- Discovery / JWKS / UserInfo (igual) ----------
+# ---------- Discovery / JWKS / UserInfo (same logic) ----------
 @bp.get("/.well-known/openid-configuration")
 def discovery():
     iss = current_app.config["OIDC_ISSUER"].rstrip("/")
@@ -64,10 +62,10 @@ def jwks_json():
 with open("./sgx_test_keys/jwks.json") as f:
     JWKS = json.load(f)
 
-@bp.route("/.well-known/jwks.json") # Devuelve la clave publica de RSA que tiene el SGX. HAY QUE QUITARLO CUANDO FUNCIONE Y PUBLICARLO EN EL SGX
+@bp.route("/.well-known/jwks.json") # Returns the SGX RSA public key. Remove when working and publish it within SGX.
 def jwks_sgx():
     resp = make_response(jsonify(JWKS), 200)
-    # CORS abierto para pruebas (restringe en prod)
+    # Open CORS for tests (restrict in prod)
     resp.headers["Access-Control-Allow-Origin"] = "*"
     resp.headers["Cache-Control"] = "public, max-age=3600"
     return resp
@@ -92,7 +90,7 @@ def register_page():
 
 @bp.post("/register")
 def do_register():
-    """Llama al autenticador Cloud: POST /register y guarda la pública/credential."""
+    """Call the Cloud authenticator POST /register and store the public credential."""
     username = (request.form.get("firstname") or "").strip()
     rp_id = (request.form.get("rpId") or current_app.config["RP_ID"]).strip()
     overwrite = "true" if request.form.get("overwrite") == "on" else "false"
@@ -100,7 +98,7 @@ def do_register():
     payload = request.form.get("enc_payload")
 
     if not username:
-        flash("Falta el nombre.", "info")
+        flash("Name is required.", "info")
         return redirect("/register")
 
     base = current_app.config["WSCD_URL"].rstrip("/")
@@ -116,14 +114,14 @@ def do_register():
         if resp.status_code not in (200, 201):
             raise RuntimeError(data)
     except Exception as e:
-        flash(f"Fallo registrando credencial: {e}", "info")
+        flash(f"Credential registration failed: {e}", "info")
         return redirect("/register")
 
-    # Persistir en el IdP
+    # Persist the credential in the IdP
     rec = CredentialRecord(
         username=username,
         rp_id=rp_id,
-        user_id=data["id"], # mismo id que se ha registrado en el authenticator
+        user_id=data["id"], # Same id registered in the authenticator
         credential_id_b64=data["id"],
         public_key_b64=data["pubKey"]
         # alg=data.get("alg", "ES256"),
@@ -131,7 +129,7 @@ def do_register():
     )
     save_credential(rec)
 
-    flash("Credencial registrada en el autenticador Cloud.", "success")
+    flash("Credential registered in the Cloud authenticator.", "success")
     return redirect("/success")
 
 @bp.get("/success")
@@ -140,15 +138,15 @@ def success_register():
 
 @bp.get("/login")
 def login_page():
-    # Reusamos la plantilla de login con webcam que ya tienes
+    # Reuse the existing login template with webcam
     return render_template("login.html", return_to=request.args.get("return_to", "/authorize"))
 
 @bp.post("/login")
 def do_login():
     """
-    Recibe: firstname, password, face_b64 (del formulario).
-    Construye las opciones WebAuthn, llama al /assertion del autenticador,
-    y verifica la assertion usando la clave pública guardada en el IdP.
+    Receive firstname, password, and face_b64 from the form.
+    Build the WebAuthn options, call the authenticator /assertion endpoint,
+    and verify the assertion using the stored public key in the IdP.
     """
     firstname = (request.form.get("firstname") or "").strip()
     return_to = request.form.get("return_to") or "/"
@@ -191,15 +189,13 @@ def do_login():
             raise RuntimeError(aresp.text)
         data = aresp.json()
     except Exception as e:
-        flash(f"Error obteniendo assertion: {e}", "info")
+        flash(f"Error obtaining assertion: {e}", "info")
         return redirect(f"/login?{urlencode({'return_to': return_to})}")
 
-    # ----- Verificación de assertion -----
+    # ----- Assertion verification -----
     try:
         if not cred:
-            raise ValueError("No hay credencial registrada para este usuario en el IdP.")
-
-        
+            raise ValueError("No credential registered for this user in the IdP.")
 
         pub_key_bytes = base64.b64decode(cred.public_key_b64)
         public_key = ed25519.Ed25519PublicKey.from_public_bytes(pub_key_bytes)
@@ -215,17 +211,17 @@ def do_login():
 
 
     except InvalidSignature:
-        flash("Firma inválida en assertion.", "info")
+        flash("Invalid signature in assertion.", "info")
         return redirect(f"/login?{urlencode({'return_to': return_to})}")
     except Exception as e:
-        flash(f"Assertion inválida: {e}", "info")
+        flash(f"Invalid assertion: {e}", "info")
         return redirect(f"/login?{urlencode({'return_to': return_to})}")
 
-    # ✅ Autenticación correcta: marcamos sesión y volvemos al authorize original
+    # Successful authentication: store the session and return to the original authorize request
     session["user_sub"] = firstname
     return redirect(return_to)
 
-# ---------- OAuth/OIDC core: /authorize y /token (sin cambios lógicos) ----------
+# ---------- OAuth/OIDC core: /authorize and /token (no logical changes) ----------
 @bp.get("/authorize")
 def authorize():
     print(f"entrando....")
@@ -241,19 +237,18 @@ def authorize():
     code_challenge_method = q.get("code_challenge_method")
 
     if response_type != "code" or not client_id or not redirect_uri or not state:
-        return abort(400, "parámetros requeridos")
+        return abort(400, "missing required parameters")
 
     client = get_client(client_id)
     if not client or redirect_uri not in client.redirect_uris:
-        return abort(400, "cliente o redirect_uri no válidos")
+        return abort(400, "invalid client or redirect_uri")
 
     sub = session.get("user_sub")
     if not sub:
         return_to = request.full_path
         return redirect(f"/login?{urlencode({'return_to': return_to})}")
-    print(sub)
 
-    session.clear()
+    session.clear() ## REMOVE AFTER TESTING
     user = User(sub=sub, email=f"{sub}@example.com", name=sub.title())
     code = issue_code(client_id, redirect_uri, user, scope, nonce,
                       code_challenge, code_challenge_method)
@@ -263,7 +258,6 @@ def authorize():
 
 @bp.post("/token")
 def token():
-    print("Cambiando token.....")
     grant_type = request.form.get("grant_type")
     code = request.form.get("code")
     redirect_uri = request.form.get("redirect_uri")
@@ -271,7 +265,7 @@ def token():
     code_verifier = request.form.get("code_verifier")
 
     if grant_type != "authorization_code":
-        return abort(400, "grant_type inválido")
+        return abort(400, "invalid grant_type")
 
     try:
         user, token_set = exchange_code(code, redirect_uri, client_id, code_verifier)
