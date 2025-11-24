@@ -18,7 +18,7 @@ export class ImageFaceForm {
     this.form        = document.getElementById("formulario");
     this.padRatio    = parseFloat(this.form?.dataset?.facePadding ?? "0");
 
-    // NUEVO: contenedores para aplicar clase .captured
+    // Containers used to toggle the .captured state
     this.captureBox  = document.querySelector(".capture-box");
     this.videoBox    = document.getElementById("video-box");
 
@@ -32,7 +32,6 @@ export class ImageFaceForm {
     this.btnStart?.addEventListener("click", () => this.startCamera());
     this.btnCapture?.addEventListener("click", () => this.captureFromVideo());
     this.btnRetake?.addEventListener("click", () => this.retake());
-    // si quitaste el input de archivo del HTML esto no fallará
     this.faceFile?.addEventListener("change", (ev) => this.processFile(ev));
   }
 
@@ -59,19 +58,19 @@ export class ImageFaceForm {
 
       this.video.srcObject = this.stream;
 
-      // mostrar video, ocultar preview
+      // Show video, hide preview
       this.video.style.display = "block";
       this.canvas.style.display = "none";
       if (this.preview) this.preview.style.display = "none";
 
-      // quitar modo "capturado" del contenedor
+      // Remove "captured" mode from the container
       this.captureBox?.classList.remove("captured");
 
       this.btnCapture && (this.btnCapture.disabled = false);
       this.btnRetake && (this.btnRetake.style.display = "none");
       this.captured = false;
     }catch(e){
-      this.showError(`No se pudo acceder a la cámara: ${e.message}`);
+      this.showError(`Could not access the camera: ${e.message}`);
     }
   }
 
@@ -84,7 +83,7 @@ export class ImageFaceForm {
 
   async captureFromVideo(){
     try{
-      // asegurarnos de que el vídeo ya tiene dimensiones
+      // Ensure the video already has dimensions
       if (!this.video.videoWidth || !this.video.videoHeight){
         await new Promise(res => { this.video.onloadedmetadata = () => res(); });
       }
@@ -94,18 +93,18 @@ export class ImageFaceForm {
       this.canvas.height = h;
       this.canvas.getContext("2d").drawImage(this.video, 0, 0, w, h);
 
-      // detectar cara y rellenar preview + hidden
+      // Detect face and fill preview + hidden inputs
       await this.detectCropAndSet(this.canvas);
 
-      // apagar cámara
+      // Stop camera
       this.stopCamera();
 
-      // ocultar video/canvas y mostrar preview
+      // Hide video/canvas and show preview
       this.video.style.display = "none";
       this.canvas.style.display = "none";
       if (this.preview) this.preview.style.display = "block";
 
-      // 👇 modo "capturado": oculta recuadro negro por CSS
+      // Captured mode hides the black frame via CSS
       this.captureBox?.classList.add("captured");
 
       if (this.btnRetake) this.btnRetake.style.display = "inline-block";
@@ -127,21 +126,21 @@ export class ImageFaceForm {
       this.canvas.style.display = "none";
       if (this.preview) this.preview.style.display = "block";
 
-      // si sube archivo también queremos el modo capturado
+      // If a file is uploaded, we also want captured mode
       this.captureBox?.classList.add("captured");
 
       if (this.btnRetake) this.btnRetake.style.display = "inline-block";
       this.captured = true;
     }catch(e){
-      this.showError(`No se pudo procesar la imagen: ${e.message}`);
+      this.showError(`Could not process the image: ${e.message}`);
     }
   }
 
   async prepareFaceIfNeeded(){
-    // por si el formulario se envía sin haber llamado a captureFromVideo
+    // In case the form is submitted without calling captureFromVideo
     if (this.faceB64.value) return;
 
-    // si hay cámara activa, capturamos de ahí
+    // If the camera is active, capture from it
     if (this.stream){
       if (!this.video.videoWidth || !this.video.videoHeight){
         await new Promise(res => { this.video.onloadedmetadata = () => res(); });
@@ -153,11 +152,11 @@ export class ImageFaceForm {
       return;
     }
 
-    // si hay archivo (solo si existe el input)
+    // If there is an uploaded file (only if the input exists)
     const f = this.faceFile?.files?.[0];
     if (f){ await this.processSelectedFileAndDetect(f); return; }
 
-    throw new Error("Falta rostro. Captura con cámara.");
+    throw new Error("Missing face. Capture with camera.");
   }
 
   async processSelectedFileAndDetect(file){
@@ -189,19 +188,18 @@ export class ImageFaceForm {
     const dets = result?.detections || [];
   
     if (dets.length !== 1) {
-      throw new Error(`Se detectaron ${dets.length} rostros. Debe haber exactamente 1.`);
+      throw new Error(`Detected ${dets.length} faces. Exactly one is required.`);
     }
-  
+
     const det = dets[0];
     const score = det?.categories?.[0]?.score ?? 0;
     if (score < 0.5) {
-      throw new Error(`Confianza insuficiente (${(score*100).toFixed(1)}%). Reintenta con mejor luz/encuadre.`);
+      throw new Error(`Insufficient confidence (${(score*100).toFixed(1)}%). Try again with better lighting/framing.`);
     }
   
     const mime = this.faceMime?.value || mimeFallback || "image/jpeg";
   
-    /* 1) MOSTRAR al usuario la imagen completa
-          (la que salió de la cámara) en el mismo recuadro que el video-box */
+    /* 1) Show the full image from the camera in the same box as the video */
     const fullDataUrl = srcCanvas.toDataURL(mime, 0.92);
     this.previewImg.src = fullDataUrl;   // 👈 esto es lo que ves en pantalla
   
@@ -209,10 +207,10 @@ export class ImageFaceForm {
     const faceCanvas = cropTo160FromCanvas(srcCanvas, det.boundingBox, this.padRatio);
     const faceDataUrl = dataUrlFromCanvas(faceCanvas, mime, 0.92);
   
-    // guardar el recorte en el hidden que se envía
+    // Store the cropped face in the hidden input sent with the form
     this.faceB64.value = faceDataUrl;
   
-    // raw BGR8 del recorte (igual que antes)
+    // Raw BGR8 from the crop (same as before)
     const bgr8_b64 = canvasToBGR8Base64(faceCanvas);
     document.getElementById("face_raw_bgr8").value = bgr8_b64;
     document.getElementById("face_raw_meta").value = JSON.stringify({
@@ -223,13 +221,13 @@ export class ImageFaceForm {
 
 
   retake(){
-    // limpiar datos
+    // Clear captured data
     this.faceB64.value = "";
     if (this.preview) this.preview.style.display = "none";
     this.captureBox?.classList.remove("captured");
     this.captured = false;
 
-    // volver a iniciar la cámara
+    // Restart the camera
     this.startCamera();
   }
 }

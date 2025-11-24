@@ -2,7 +2,7 @@ import * as AesCrypto from "./AesCrypto.js";
 
 export class FormHandler {
   constructor(imageFaceForm, {
-    jwksUrl = "/.well-known/jwks.json",   // PONER AQUI LA URL DEL ENPOINT QUE EXPONGA LA PK RSA DEL WSCD
+    jwksUrl = "/.well-known/jwks.json",   // URL for the BioServer RSA public key endpoint
     formId  = "formulario",
     errorId = "form-error"
   } = {}) {
@@ -120,7 +120,7 @@ export class FormHandler {
     // 3) Build a clear payload
     const payload = {
       firstname,
-      password: passHash32, // secret when its ready                
+      password: passHash32, // secret once fully implemented
       foto: face_b64,
       // meta: {
       //   ts: new Date().toISOString(),
@@ -128,17 +128,16 @@ export class FormHandler {
       //   client: "idp-demo-v1"
       // }
     };
-    console.log(payload);
 
-    // 4) AAD (Aditional Authenticated Data) for fresh
+    // 4) AAD (Additional Authenticated Data) for freshness
     const aad = { ts: Date.now(), nonce: this.randomNonceB64url(12) };
 
-    // 5) fetch the RSA_PK
+    // 5) Fetch the RSA public key
     const serverPubJwk = await this.fetchServerEncKey();
     const serverKid    = serverPubJwk?.kid || null;
 
     try {
-      // 6) Cipher and envolve
+      // 6) Encrypt and envelope
       const jwe = await AesCrypto.encryptAndWrap({
         payloadObj: payload,
         aadObj: aad,
@@ -155,7 +154,7 @@ export class FormHandler {
 
     } catch (err) {
       console.error(err);
-      this.showFormError("Error al cifrar datos: " + (err?.message || String(err))); // TODO. Traducir los mensajes 
+      this.showFormError("Error during the cipher: " + (err?.message || String(err))); 
     }
   }
 }
@@ -170,7 +169,7 @@ function toBase64(bytes) {
   for (let i = 0; i < bytes.length; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
-  return btoa(binary); // Mantiene el padding '=' automáticamente
+  return btoa(binary); // Keeps padding '=' automatically
 }
 
 async function sha256Base64(str) {

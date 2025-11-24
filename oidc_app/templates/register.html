@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <title>IdP Demo — Register</title>
@@ -9,8 +9,8 @@
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <h1 class="app-title">Registro</h1>
-      <p class="app-sub">Registrare en el IdP</p>
+      <h1 class="app-title">Register</h1>
+      <p class="app-sub">Register in the IdP</p>
     </header>
 
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -28,28 +28,28 @@
     <form method="post" action="/register" id="formulario" class="form-shell">
       <input type="hidden" name="return_to" value="{{ return_to }}">
 
-      <!-- PANTALLA 1 -->
+      <!-- SCREEN 1 -->
       <section id="screen-credentials" class="screen screen--active">
         <div class="screen-body">
-          <label for="firstname" class="label">Nombre</label>
+          <label for="firstname" class="label">Name</label>
           <input id="firstname" name="firstname" placeholder="alice" required autocomplete="username given-name" class="input">
 
-          <label for="password" class="label">Contraseña</label>
-          <input id="password" name="password" type="password" placeholder="Tu contraseña" required autocomplete="current-password" class="input">
+          <label for="password" class="label">Password</label>
+          <input id="password" name="password" type="password" placeholder="Your password" required autocomplete="current-password" class="input">
         </div>
 
         <div class="screen-footer">
-          <button type="button" id="btn-next" class="btn btn-primary">Continuar</button>
+          <button type="button" id="btn-next" class="btn btn-primary">Continue</button>
         </div>
       </section>
 
-      <!-- PANTALLA 2 -->
+      <!-- SCREEN 2 -->
       <section id="screen-face" class="screen">
         <div class="screen-body">
-          <h2 class="section-title">Verificación facial</h2>
-          <p class="section-hint">Captura tu rostro.</p>
+          <h2 class="section-title">Face verification</h2>
+          <p class="section-hint">Capture your face.</p>
 
-          <!-- contenedor que alterna vídeo / preview -->
+          <!-- container toggles video/preview -->
           <div class="capture-box">
             <div class="video-box" id="video-box">
               <video id="video" autoplay playsinline></video>
@@ -62,28 +62,28 @@
           </div>
 
           <div class="controls">
-            <button type="button" class="btn btn-primary" id="btn-start">Encender cámara</button>
-            <button type="button" class="btn btn-secondary" id="btn-capture" disabled>Capturar</button>
-            <button type="button" class="btn btn-secondary" id="btn-retake" style="display:none;">Repetir</button>
+            <button type="button" class="btn btn-primary" id="btn-start">Turn on camera</button>
+            <button type="button" class="btn btn-secondary" id="btn-capture" disabled>Capture</button>
+            <button type="button" class="btn btn-secondary" id="btn-retake" style="display:none;">Retake</button>
           </div>
 
           <div class="error" id="cam-error"></div>
 
-          <!-- Imagen capturada (Base64) -->
+          <!-- Captured image (Base64) -->
           <input type="hidden" id="face_b64" name="face_b64" disabled>
           <input type="hidden" id="face_mime" name="face_mime" value="image/jpeg" disbaled>
         </div>
 
         <div class="screen-footer screen-footer--split">
-          <button type="button" id="btn-back" class="btn btn-secondary">Atrás</button>
+          <button type="button" id="btn-back" class="btn btn-secondary">Back</button>
           <div class="cta-right">
-            <button class="btn btn-primary" type="submit">Enviar</button>
+            <button class="btn btn-primary" type="submit">Submit</button>
           </div>
         </div>
 
       </section>
 
-      <!-- hidden que dijiste que son necesarios -->
+      <!-- hidden fields required -->
       <input type="hidden" id="face_raw_bgr8" name="face_raw_bgr8" disabled>
       <input type="hidden" id="face_raw_meta" name="face_raw_meta" disabled>
       <input type="hidden" id="enc_payload" name="enc_payload">
@@ -109,13 +109,11 @@
       scrCred.classList.add('screen--active');
     });
 
-    // estos ids los usará también tu main.js,
-    // pero aquí dejamos claro cómo ocultar el vídeo al capturar:
+    // main.js uses these ids too, but we spell out how to hide the video when capturing:
     const btnRetake = document.getElementById('btn-retake');
     const btnCapture = document.getElementById('btn-capture');
 
-    // si tu main.js ya hace la captura, solo necesitas
-    // llamar a estas líneas allí cuando haya foto:
+    // If main.js already handles capture, just call these when there is a photo:
     window.showPreview = function() {
       if (videoBox) videoBox.style.display = 'none';
       if (previewBox) previewBox.style.display = 'block';

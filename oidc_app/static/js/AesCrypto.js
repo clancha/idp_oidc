@@ -1,5 +1,5 @@
 // AesCrypto.js
-// AES-GCM + wrap de clave AES con RSA-OAEP-256 (WebCrypto).
+// AES-GCM + AES key wrapping with RSA-OAEP-256 (WebCrypto).
 // Exposes encryptAndWrap({ payloadObj, aadObj, serverPubJwk, serverKid }).
 
 // ======================= Config =======================
@@ -90,7 +90,7 @@ function pickRsaOaep256Jwk(jwks, wantKid) {
 }
 
 async function importRsaPublicKeyFromJwk(jwk) {
-  // FIX: incluir "wrapKey" en usages
+// Include "wrapKey" in usages
   return crypto.subtle.importKey(
     "jwk",
     jwk,
@@ -100,17 +100,14 @@ async function importRsaPublicKeyFromJwk(jwk) {
   );
 }
 
-// ====== Wrap AES key (RSA-OAEP-256 vía JWK/JWKS) ======
+// ====== Wrap AES key (RSA-OAEP-256 via JWK/JWKS) ======
 async function wrapAesKeyWithPublicKey(aesKey, pubKey) {
-  // Preferimos wrapKey; si falla en algún user agent, hacemos fallback a export+encrypt
+  // Key wrapping requires an extractable AES key; surface clear errors instead of exporting
   try {
     const wrappedBuf = await crypto.subtle.wrapKey("raw", aesKey, pubKey, { name: "RSA-OAEP" });
     return new Uint8Array(wrappedBuf);
   } catch (e) {
-    // Fallback: exportar raw y cifrar (seguirá funcionando porque extractable:true)
-    const raw = new Uint8Array(await crypto.subtle.exportKey("raw", aesKey));
-    const wrapped = await crypto.subtle.encrypt({ name: "RSA-OAEP" }, pubKey, raw);
-    return new Uint8Array(wrapped);
+    throw new Error(`Failed to wrap AES key (likely not extractable): ${e?.message || e}`);
   }
 }
 
@@ -138,16 +135,16 @@ export async function encryptAndWrap({ payloadObj, aadObj, serverPubJwk, serverK
   // 1) Generate AES-GCM 256 (extractable:true for wrap)
   const aesKey = await generateAesGcmKey();
 
-  // 2) Get the plaintext ready (JSON del payload)
+  // 2) Get the plaintext ready (payload JSON)
   const plaintextU8 = te.encode(JSON.stringify(payloadObj));
 
-  // 3) get AAD
+  // 3) Get AAD
   let aadU8;
   if (aadObj !== undefined && aadObj !== null) {
     aadU8 = te.encode(JSON.stringify(aadObj));
   }
 
-  // 4) Cipher with AES-GCM
+  // 4) Encrypt with AES-GCM
   const { iv, ciphertext } = await encryptBytes(plaintextU8, aesKey, undefined, aadU8);
 
   // 5) Envelope the AES key with RSA-OAEP-256
@@ -162,7 +159,7 @@ export async function encryptAndWrap({ payloadObj, aadObj, serverPubJwk, serverK
   return {
     // AES-GCM payload
     iv_b64u: toBase64url(iv),                     // IV (12 bytes)
-    ct_b64u: toBase64url(ciphertext),             // ciphertext + tag (WebCrypto concatena)
+    ct_b64u: toBase64url(ciphertext),             // ciphertext + tag (WebCrypto concatenates)
     enc: "A256GCM",
 
     // Enveloped Key
