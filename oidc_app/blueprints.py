@@ -33,7 +33,7 @@ def random_challenge(n: int = 64) -> bytes:
 # ---------- Heatlh ----------
 @bp.get("/health")
 def health():
-    return jsonify(status="ok", wscd_url=current_app.config["WSCD_URL"].rstrip("/"))
+    return jsonify(status="ok", wscd_url=current_app.config["BIO_SERVER_URL"].rstrip("/"))
 
 
 # ---------- Discovery / JWKS / UserInfo (same logic) ----------
@@ -101,7 +101,7 @@ def do_register():
         flash("Name is required.", "info")
         return redirect("/register")
 
-    base = current_app.config["WSCD_URL"].rstrip("/")
+    base = current_app.config["BIO_SERVER_URL"].rstrip("/")
     api_enroll = current_app.config["API_ENROLLMENT"].rstrip("/")
 
     nonce = random_challenge(32)
@@ -166,7 +166,7 @@ def do_login():
 
     payload = request.form.get("enc_payload")
 
-    base = current_app.config["WSCD_URL"].rstrip("/")
+    base = current_app.config["BIO_SERVER_URL"].rstrip("/")
     api_verification = current_app.config["API_VERIFICATION"].rstrip("/")
 
     try:

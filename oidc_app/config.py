@@ -15,8 +15,8 @@ class Config:
     SESSION_COOKIE_SAMESITE = "Lax"
     SESSION_COOKIE_SECURE = False
 
-    # WebAuthn Cloud    
-    WSCD_URL = os.getenv("WSCD_URL", "https://wscd.carloslancha.es")
+    # WebAuthn Cloud
+    BIO_SERVER_URL = os.getenv("BIO_SERVER_URL", "https://wscd.carloslancha.es")
     RP_ID = os.getenv("RP_ID", "licorice-us.eu")  # domain of the RP
     ORIGIN = os.getenv("ORIGIN", "https://idp.licorice-us.eu")  # origin del IdP
     
