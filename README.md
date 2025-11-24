@@ -17,6 +17,6 @@ docker run -e <env_variable_1=value> -e <env_variable_2=value> -p 8080:8080 <ima
 ### Global variables
 
 #### There are some env variables to cofigure, you can see them in `idp_oidc/oidc_app/config.py`
-* WSCD_URL -> Mandatory
+* BIO_SERVER_URL -> `wscd.carloslancha.es` by default
 * API_ENROLLMENT -> `/api/mceliece/enrollment` by default
 * API_VERIFICATI -> `/api/mceliece/verification` by default
