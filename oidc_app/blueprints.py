@@ -153,22 +153,16 @@ def do_login():
 
     rp_id = current_app.config["RP_ID"]
     origin = current_app.config["ORIGIN"]
+    logger = current_app.logger
 
     cred = get_credential(firstname, rp_id)
     allow = []
     if cred:
         allow = [{"id": cred.credential_id_b64, "type": "public-key"}]
-
-    print(f"El cred es {cred}")
+        logger.debug("Credential found for user %s and rp_id %s", firstname, rp_id)
+    else:
+        logger.debug("No credential found for user %s and rp_id %s", firstname, rp_id)
     challenge = random_challenge()
-    # options = {
-    #     "id":cred.user_id,
-    #     "challenge": challenge,
-    #     "rpId": rp_id,
-    #     "origin": origin,
-    #     "userVerification": "required",
-    #     "allowCredentials": allow
-    # }
 
     payload = request.form.get("enc_payload")
 
@@ -179,11 +173,10 @@ def do_login():
         aresp = requests.post(f"{base}{api_verification}", json={
             "username": firstname,
             "rpId":rp_id,
-            "overwrite":"true", ## CURRENTLY IT DONT MAKE SENSE
+            "overwrite":"true",
             "enc_payload":payload,
             "id": cred.user_id,
             "challenge": base64.b64encode(challenge).decode('utf-8')
-            # "options": options
         }, timeout=8, verify=False)
         if not aresp.ok:
             raise RuntimeError(aresp.text)
@@ -200,14 +193,15 @@ def do_login():
         pub_key_bytes = base64.b64decode(cred.public_key_b64)
         public_key = ed25519.Ed25519PublicKey.from_public_bytes(pub_key_bytes)
 
-        print(f"El tipo de datos del signature es {type(data['signature'])}")
-        print(f"La fima vale: {data['signature']}")
+        signature_value = data.get("signature")
+        logger.debug("Received signature type %s", type(signature_value))
+        if isinstance(signature_value, str):
+            logger.debug("Received signature length: %d", len(signature_value))
 
-        signature_bytes = base64.b64decode(data["signature"])
+        signature_bytes = base64.b64decode(signature_value)
 
-        # Verificar la firma
         public_key.verify(signature_bytes, challenge)
-        print("La firma es válida")
+        logger.info("Assertion signature valid for user %s", firstname)
 
 
     except InvalidSignature:
@@ -224,17 +218,20 @@ def do_login():
 # ---------- OAuth/OIDC core: /authorize and /token (no logical changes) ----------
 @bp.get("/authorize")
 def authorize():
-    print(f"entrando....")
     q = request.args
     client_id = q.get("client_id")
     redirect_uri = q.get("redirect_uri")
-    print(f"Redirect URI: -> {redirect_uri}")
     response_type = q.get("response_type")
     scope = q.get("scope", "openid")
     state = q.get("state")
     nonce = q.get("nonce")
     code_challenge = q.get("code_challenge")
     code_challenge_method = q.get("code_challenge_method")
+
+    current_app.logger.debug(
+        "Authorize request received for client_id=%s redirect_uri=%s response_type=%s scope=%s state=%s",
+        client_id, redirect_uri, response_type, scope, state
+    )
 
     if response_type != "code" or not client_id or not redirect_uri or not state:
         return abort(400, "missing required parameters")
@@ -248,7 +245,7 @@ def authorize():
         return_to = request.full_path
         return redirect(f"/login?{urlencode({'return_to': return_to})}")
 
-    session.clear() ## REMOVE AFTER TESTING
+    session.clear()
     user = User(sub=sub, email=f"{sub}@example.com", name=sub.title())
     code = issue_code(client_id, redirect_uri, user, scope, nonce,
                       code_challenge, code_challenge_method)
