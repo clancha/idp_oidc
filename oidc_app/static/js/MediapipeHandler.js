@@ -1,4 +1,4 @@
-// Importa ESM directamente desde el CDN (evita el error de "export" en vision_bundle.js)
+// Import ESM directly from the CDN (avoids the "export" error in vision_bundle.js)
 import { FaceDetector, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0";
 
 export class MediapipeHandler {

@@ -13,12 +13,12 @@ def b64url(data: bytes) -> str:
 def randstr(n: int = 32) -> str:
     return b64url(os.urandom(n))
 
-# Clave RSA efímera para firmar id_token (solo demo)
+# Ephemeral RSA key to sign id_token (demo only)
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
 
 
-# Generamos clave RSA efímera (solo para demo, en real usarías una fija)
+# Generate an ephemeral RSA key (demo only, use a persistent one in production)
 _RSA_PRIVATE = rsa.generate_private_key(public_exponent=65537, key_size=2048)
 _JWK_PUB = json.loads(RSAAlgorithm.to_jwk(_RSA_PRIVATE.public_key()))
 _KID = "demo-kid-1"
@@ -54,17 +54,21 @@ class AccessToken:
     scope: str
     exp: int = field(default_factory=lambda: int(time.time()) + 3600)
 
-# “BD” en memoria
+# In-memory "DB"
 CLIENTS: Dict[str, Client] = {}
 CODES: Dict[str, AuthCode] = {}
 TOKENS: Dict[str, AccessToken] = {}
-SESSIONS: Dict[str, User] = {}  # muy simple: session_id -> User
+SESSIONS: Dict[str, User] = {}  # very simple: session_id -> User
 
-def init_demo_data():
+def init_demo_data(): 
     cfg = current_app.config
     CLIENTS[cfg["CLIENT_ID"]] = Client(
         client_id=cfg["CLIENT_ID"],
         redirect_uris=[cfg["REDIRECT_URI"]],
+    )
+    CLIENTS["rp"] = Client(
+        client_id="rp",
+        redirect_uris=["https://wallet.licorice-us.eu/auth/callback"]
     )
 
 def get_client(client_id: str) -> Optional[Client]:
@@ -82,26 +86,25 @@ def issue_code(client_id: str, redirect_uri: str, user: User, scope: str,
 def exchange_code(code: str, redirect_uri: str, client_id: str,
                   code_verifier: Optional[str]) -> Tuple[User, dict]:
     item = CODES.pop(code, None)
-    print(item)
     if not item or item.exp < time.time():
-        raise ValueError("authorization_code inválido o expirado")
+        raise ValueError("Invalid or expired authorization_code")
     if item.redirect_uri != redirect_uri or item.client_id != client_id:
-        raise ValueError("redirect_uri o client_id no coinciden")
+        raise ValueError("redirect_uri or client_id do not match")
 
     # PKCE
-    if item.code_challenge and False:  # Quitar la condición imposible cuando se implemtnte PKCE
+    if item.code_challenge:  # Remove this impossible branch once PKCE is implemented
         if not code_verifier:
-            raise ValueError("falta code_verifier")
+            raise ValueError("code_verifier is missing")
         if item.code_challenge_method == "S256":
             digest = hashlib.sha256(code_verifier.encode("ascii")).digest()
             challenge = b64url(digest)
         else:
             challenge = code_verifier
         if challenge != item.code_challenge:
-            raise ValueError("PKCE inválido")
+            raise ValueError("Invalid PKCE")
 
     user = User(sub=item.sub, email=f"{item.sub}@example.com", name=item.sub.title())
-    print(user)
+
     # access_token
     at = AccessToken(token=randstr(32), sub=user.sub, scope=item.scope)
     TOKENS[at.token] = at
@@ -138,8 +141,8 @@ def exchange_code(code: str, redirect_uri: str, client_id: str,
 def userinfo_from_bearer(bearer: str) -> dict:
     at = TOKENS.get(bearer)
     if not at or at.exp < time.time():
-        raise ValueError("token inválido")
-    # En demo reconstruimos claims sencillos
+        raise ValueError("Invalid token")
+    # In this demo we reconstruct simple claims
     return {
         "sub": at.sub,
         "email": f"{at.sub}@example.com",
@@ -166,7 +169,7 @@ class CredentialRecord:
     alg: str = "ES256"
     sign_count: int = 0
 
-# Mapa username:rp_id -> credencial
+# username:rp_id -> credential map
 CREDENTIALS: dict[str, CredentialRecord] = {}
 
 def cred_key(username: str, rp_id: str) -> str:

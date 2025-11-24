@@ -29,7 +29,7 @@ export function cropTo160FromCanvas(srcCanvas, bbox, paddingRatio = 0) {
   out.getContext("2d").drawImage(srcCanvas, sx, sy, sw, sh, 0, 0, 160, 160);
   return out;
 }
-// --- Para convertir ArrayBuffer -> base64 ---
+// --- Convert ArrayBuffer -> base64 ---
 export function arrayBufferToBase64(buf){
   let bin = "";
   const bytes = new Uint8Array(buf);
@@ -40,15 +40,15 @@ export function arrayBufferToBase64(buf){
   return btoa(bin);
 }
 
-// --- Genera BGR8 base64 desde un canvas 160x160 ---
+// --- Generate BGR8 base64 from a 160x160 canvas ---
 export function canvasToBGR8Base64(canvas){
   const ctx = canvas.getContext("2d");
   const { data } = ctx.getImageData(0, 0, 160, 160); // RGBA
   const out = new Uint8Array(160 * 160 * 3);         // BGR
   for (let i = 0, j = 0; i < data.length; i += 4) {
-    out[j++] = (data[i + 2] / 127.5) -1; // B
-    out[j++] = (data[i + 1] / 127.5) -1; // G
-    out[j++] = (data[i + 0] / 127.5) -1; // R
+    out[j++] = data[i + 2] // B
+    out[j++] = data[i + 1] // G
+    out[j++] = data[i + 0] // R
   }
   return arrayBufferToBase64(out.buffer);
 }

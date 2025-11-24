@@ -1,0 +1,275 @@
+:root {
+  --bg: #f7fafc;
+  --fg: #0f172a;
+  --muted: #6b7280;
+  --card: #ffffff;
+  --border: #e5e7eb;
+  --acc: #06b6d4;
+  --acc-2: #0ea5e9;
+  --radius-lg: 18px;
+  --shadow: 0 8px 30px rgba(2, 32, 71, 0.06);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--fg);
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  padding: 16px 16px 8px;
+}
+
+.app-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.app-sub {
+  margin: 4px 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.flash-list {
+  list-style: none;
+  padding: 0 16px;
+  margin: 0;
+}
+
+.flash {
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-size: 0.8rem;
+  margin-bottom: 8px;
+}
+
+.flash-error {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #7f1d1d;
+}
+
+.form-shell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* === Pantallas === */
+.screen {
+  position: relative;
+  min-height: 100vh;
+  padding: 16px;
+  display: none;
+}
+
+.screen--active {
+  display: block;
+}
+
+/* === Recuadro blanco (altura fija en todas las pantallas) === */
+.screen-body {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.screen-footer {
+  margin-top: 4px;
+  display: flex;
+  gap: 10px;
+}
+
+.screen-footer--split {
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.cta-right {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
+}
+
+.aux-links {
+  display: flex;
+  gap: 10px;
+}
+
+.aux-link {
+  font-size: 0.7rem;
+  color: #0f172a;
+  text-decoration: underline;
+}
+
+/* === Textos e inputs === */
+.section-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.section-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.label {
+  font-weight: 600;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  font-size: 0.9rem;
+}
+
+.input:focus {
+  border-color: var(--acc);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.2);
+}
+
+/* === Botones === */
+.btn {
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+}
+
+.btn-primary {
+  background: var(--acc);
+  color: #042028;
+}
+
+.btn-primary:hover {
+  background: var(--acc-2);
+}
+
+.btn-secondary {
+  background: #eef6fb;
+  color: #0f172a;
+}
+
+.btn-link {
+  background: transparent;
+  color: #0f172a;
+  text-decoration: underline;
+  padding: 6px 0;
+  border-radius: 0;
+}
+
+/* === Captura facial === */
+.capture-box {
+  position: relative;
+  width: 100%;
+}
+
+/* default state: camera visible, preview hidden */
+.video-box {
+  background: #000;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  aspect-ratio: 3/4;
+  max-height: 420px;
+  margin: 0 auto;
+}
+
+video, canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.preview {
+  /* margin-top: 0; */
+  /* margin-bottom: 0; */
+  /* border: 1px dashed #cfe8f3; */
+  /* background: #d31239; */
+  /* border-radius: 12px; */
+  /* padding: 2px; */
+  display: none;
+}
+
+/* when there is a capture */
+.capture-box.captured .video-box {
+  display: none;
+}
+
+.capture-box.captured .preview {
+  display: block;
+}
+
+/* limit photo size so it is not huge */
+.preview img {
+  width: 100%;
+  max-height: 420px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+/* camera controls */
+.controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* camera error */
+.error {
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  color: #7f1d1d;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin: 10px 0;
+  display: none;
+  font-size: 0.75rem;
+}
+
+/* === Layout desktop === */
+@media (min-width: 720px) {
+  .app-shell {
+    max-width: 540px;
+    margin: 0 auto;
+  }
+}
