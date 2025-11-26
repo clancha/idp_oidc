@@ -92,7 +92,7 @@ def exchange_code(code: str, redirect_uri: str, client_id: str,
         raise ValueError("redirect_uri or client_id do not match")
 
     # PKCE
-    if item.code_challenge:  # Remove this impossible branch once PKCE is implemented
+    if item.code_challenge:  
         if not code_verifier:
             raise ValueError("code_verifier is missing")
         if item.code_challenge_method == "S256":
