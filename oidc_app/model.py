@@ -131,10 +131,10 @@ def exchange_code(code: str, redirect_uri: str, client_id: str,
     )
 
     return user, {
-        "access_token": at.token,
+        "access_token": at.token, 
         "token_type": "Bearer",
         "expires_in": at.exp - now,
-        "id_token": id_token,
+        "id_token": id_token, # There will be no id_token
         "scope": item.scope,
     }
 
