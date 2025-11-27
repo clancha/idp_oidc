@@ -245,7 +245,6 @@ def authorize():
         return_to = request.full_path
         return redirect(f"/login?{urlencode({'return_to': return_to})}")
 
-    session.clear()
     user = User(sub=sub, email=f"{sub}@example.com", name=sub.title())
     code = issue_code(client_id, redirect_uri, user, scope, nonce,
                       code_challenge, code_challenge_method)
