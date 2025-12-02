@@ -7,8 +7,8 @@ class Config:
     OIDC_ISSUER_BACKEND = os.getenv("OIDC_ISSUER_BACKEND", "https://idp.licorice-us.eu") # Docker internal address
 
     # Cliente de prueba (público)
-    CLIENT_ID = os.getenv("CLIENT_ID", "android-test-client")
-    REDIRECT_URI = os.getenv("REDIRECT_URI", "myapp://callback")
+    CLIENT_ID = os.getenv("CLIENT_ID", "rp")
+    REDIRECT_URI = os.getenv("REDIRECT_URI", "https://wallet.licorice-us.eu/auth/callback")
 
     # Cookies
     SESSION_COOKIE_HTTPONLY = True
