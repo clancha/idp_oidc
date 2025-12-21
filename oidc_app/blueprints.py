@@ -16,7 +16,7 @@ from cryptography.exceptions import InvalidSignature
 bp = Blueprint("oidc", __name__)
 
 
-# ---------- Utils ----------
+# ---------- Utils ---------- 
 def b64url_decode(s: str) -> bytes:
     return base64.urlsafe_b64decode(s + "=" * (-len(s) % 4))
 
