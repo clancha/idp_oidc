@@ -82,6 +82,11 @@ def userinfo():
         return abort(401)
 
 # ---------- Páginas Register/Login ----------
+@bp.post("/logout")
+def logout():
+    session.clear()
+    return redirect("https://wallet.licorice-us.eu/")
+
 @bp.get("/register")
 def register_page():
     return render_template("register.html",
