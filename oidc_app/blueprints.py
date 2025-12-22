@@ -59,12 +59,17 @@ def discovery():
 def jwks_json():
     return jwks()
 
-with open("./sgx_test_keys/jwks.json") as f:
-    JWKS = json.load(f)
-
 @bp.route("/.well-known/jwks.json") # Returns the SGX RSA public key. Remove when working and publish it within SGX.
 def jwks_sgx():
-    resp = make_response(jsonify(JWKS), 200)
+    base = current_app.config["BIO_SERVER_URL"].rstrip("/")
+    try:
+        upstream = requests.get(f"{base}/jwks.json", timeout=5, verify=False)
+        data = upstream.json()
+        status = upstream.status_code
+    except Exception:
+        data = {"error": "upstream_jwks_unavailable"}
+        status = 502
+    resp = make_response(jsonify(data), status)
     # Open CORS for tests (restrict in prod)
     resp.headers["Access-Control-Allow-Origin"] = "*"
     resp.headers["Cache-Control"] = "public, max-age=3600"
