@@ -8,7 +8,7 @@ This project provides a minimal OIDC IdP for controlled or high-assurance enviro
 
 ## Architecture and Authentication Flow
 
-![Biometric verification flow image](assets/biometric_verificaction.png)
+![Biometric verification flow image](assets/biometric_verification.png)
 
 ## Requirements
 
